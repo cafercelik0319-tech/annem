@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İyi Ki Doğdun Canım Annem</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Zarif el yazısı ve okunaklı serif fontlar -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Great+Vibes&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Özel Font Tanımları */
+        .font-script { font-family: 'Great Vibes', cursive; }
+        .font-serif-elegant { font-family: 'Cormorant Garamond', serif; }
+        .font-sans-clean { font-family: 'Montserrat', sans-serif; }
+
+        /* Arka Plan Yumuşak Pastel Geçişi */
+        body {
+            background: radial-gradient(circle at 50% 40%, #fff5f7 0%, #fce7eb 45%, #f5d0d8 100%);
+            overflow-x: hidden;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Buket Hafif Salınım Animasyonu */
+        @keyframes gentleSway {
+            0%, 100% { transform: rotate(-1.5deg) translateY(0px); }
+            50% { transform: rotate(1.5deg) translateY(-5px); }
+        }
+        .bouquet-sway {
+            transform-origin: bottom center;
+            animation: gentleSway 6s ease-in-out infinite;
+        }
+
+        /* Çiçeklerin Hafif Nefes Alma Efekti */
+        @keyframes flowerBreathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .flower-pulse {
+            transform-origin: center;
+            animation: flowerBreathe 4s ease-in-out infinite;
+        }
+
+        /* Zarf Dikkat Çekici Nabız Animasyonu */
+        @keyframes envelopeFloat {
+            0%, 100% { transform: translateY(0px) rotate(-3deg) scale(1); }
+            50% { transform: translateY(-6px) rotate(-1deg) scale(1.04); }
+        }
+        .envelope-interactive {
+            animation: envelopeFloat 3s ease-in-out infinite;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+        }
+        .envelope-interactive:hover {
+            animation-play-state: paused;
+            transform: scale(1.1) rotate(0deg) !important;
+            filter: drop-shadow(0 12px 20px rgba(225, 29, 72, 0.35));
+        }
+        .envelope-interactive:active {
+            transform: scale(0.95) !important;
+        }
+
+        /* Zarf Kapağı Açılma Animasyonu */
+        .flap {
+            transform-origin: top center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .envelope-opened .flap {
+            transform: rotateX(180deg);
+        }
+
+        /* Mektup Kağıdı Dokusu ve Gölgeleri */
+        .letter-paper {
+            background-color: #fffdf9;
+            background-image: 
+                radial-gradient(#e5d5c5 0.5px, transparent 0.5px),
+                linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(252,244,236,0.9));
+            background-size: 20px 20px, 100% 100%;
+            box-shadow: 
+                0 25px 50px -12px rgba(136, 19, 55, 0.25),
+                0 0 0 1px rgba(244, 63, 94, 0.15),
+                inset 0 0 40px rgba(251, 207, 232, 0.3);
+        }
+
+        /* Modal Açılış Kapanış Geçişleri */
+        .modal-backdrop {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        .modal-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-card {
+            transform: translateY(40px) scale(0.9);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-backdrop.active .modal-card {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+
+        /* İnce Kaydırma Çubuğu (Uzun ekranlarda veya küçük telefonlarda mektup için) */
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(254, 205, 211, 0.2);
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(244, 63, 94, 0.3);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="relative flex flex-col items-center justify-between min-h-screen py-6 px-4 font-sans-clean text-rose-950">
+
+    <!-- Arka Plan Uçuşan Taç Yapraklar ve Parıltılar Kanvası -->
+    <canvas id="petalsCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- Üst Başlık Alanı -->
+    <header class="relative z-10 text-center mt-2 sm:mt-4 animate-fade-in">
+        <span class="inline-block px-4 py-1 mb-2 text-xs font-medium tracking-widest uppercase rounded-full bg-white/70 text-rose-600 shadow-sm backdrop-blur-sm border border-rose-200/60">
+            Özel Bir Gün İçin
+        </span>
+        <h1 class="font-script text-5xl sm:text-6xl md:text-7xl text-rose-700 drop-shadow-sm leading-tight">
+            İyi Ki Doğdun Annem
+        </h1>
+        <p class="mt-1 text-sm sm:text-base text-rose-800/80 font-light">
+            Senin için hazırladığım bu buketin üzerindeki nota dokun...
+        </p>
+    </header>
+
+    <!-- Orta Alan: İnteraktif Çiçek Buketi -->
+    <main class="relative z-10 flex items-center justify-center w-full max-w-lg my-auto py-2">
+        <div class="relative w-full max-w-[380px] sm:max-w-[440px] aspect-[4/4.6] flex items-center justify-center bouquet-sway">
+            
+            <!-- Yüksek Detaylı Özel Çizim SVG Çiçek Buketi -->
+            <svg viewBox="0 0 500 580" class="w-full h-full drop-shadow-2xl overflow-visible" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <!-- Buket Kağıdı Gradyanları -->
+                    <linearGradient id="wrapBack" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#f3e5d8"/>
+                        <stop offset="100%" stop-color="#d8bfa8"/>
+                    </linearGradient>
+                    <linearGradient id="wrapFrontLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fffaf5"/>
+                        <stop offset="100%" stop-color="#ebd5c1"/>
+                    </linearGradient>
+                    <linearGradient id="wrapFrontRight" x1="100%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#f7ebe1"/>
+                        <stop offset="100%" stop-color="#dfc3aa"/>
+                    </linearGradient>
+
+                    <!-- Gül Gradyanları -->
+                    <radialGradient id="roseRed" cx="40%" cy="40%" r="60%">
+                        <stop offset="0%" stop-color="#fb7185"/>
+                        <stop offset="55%" stop-color="#e11d48"/>
+                        <stop offset="100%" stop-color="#881337"/>
+                    </radialGradient>
+                    <radialGradient id="rosePink" cx="35%" cy="35%" r="65%">
+                        <stop offset="0%" stop-color="#ffe4e6"/>
+                        <stop offset="50%" stop-color="#fda4af"/>
+                        <stop offset="100%" stop-color="#e11d48"/>
+                    </radialGradient>
+
+                    <!-- Lale Gradyanları -->
+                    <linearGradient id="tulipCoral" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#fed7aa"/>
+                        <stop offset="40%" stop-color="#fb923c"/>
+                        <stop offset="100%" stop-color="#e11d48"/>
+                    </linearGradient>
+                    <linearGradient id="tulipLavender" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#f3e8ff"/>
+                        <stop offset="50%" stop-color="#d8b4fe"/>
+                        <stop offset="100%" stop-color="#9333ea"/>
+                    </linearGradient>
+
+                    <!-- Yaprak Gradyanları -->
+                    <linearGradient id="leafGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#6ee7b7"/>
+                        <stop offset="50%" stop-color="#10b981"/>
+                        <stop offset="100%" stop-color="#065f46"/>
+                    </linearGradient>
+                    <linearGradient id="leafDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#34d399"/>
+                        <stop offset="100%" stop-color="#064e3b"/>
+                    </linearGradient>
+
+                    <!-- Kurdele Gradyanı -->
+                    <linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#be123c"/>
+                        <stop offset="50%" stop-color="#f43f5e"/>
+                        <stop offset="100%" stop-color="#9f1239"/>
+                    </linearGradient>
+                </defs>
+
+                <!-- 1. BUKET ARKA AMBALAJ KAĞIDI -->
+                <path d="M120,210 L250,55 L380,210 L320,440 L180,440 Z" fill="url(#wrapBack)" stroke="#cbb094" stroke-width="2"/>
+                <path d="M90,230 L170,130 L250,360 L150,370 Z" fill="#ebd6c3" opacity="0.9"/>
+                <path d="M410,230 L330,130 L250,360 L350,370 Z" fill="#e2cbb5" opacity="0.9"/>
+
+                <!-- 2. YEŞİL YAPRAKLAR VE OKALİPTÜS DALLARI -->
+                <g class="leaves">
+                    <!-- Sol Dal -->
+                    <path d="M230,360 Q140,260 115,175" stroke="#059669" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <ellipse cx="122" cy="185" rx="18" ry="10" transform="rotate(-35 122 185)" fill="url(#leafGreen)"/>
+                    <ellipse cx="145" cy="215" rx="20" ry="11" transform="rotate(-55 145 215)" fill="url(#leafDark)"/>
+                    <ellipse cx="125" cy="235" rx="19" ry="10" transform="rotate(15 125 235)" fill="url(#leafGreen)"/>
+                    <ellipse cx="165" cy="255" rx="22" ry="11" transform="rotate(-45 165 255)" fill="url(#leafGreen)"/>
+
+                    <!-- Sağ Dal -->
+                    <path d="M270,360 Q360,260 385,175" stroke="#059669" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <ellipse cx="378" cy="185" rx="18" ry="10" transform="rotate(35 378 185)" fill="url(#leafGreen)"/>
+                    <ellipse cx="355" cy="215" rx="20" ry="11" transform="rotate(55 355 215)" fill="url(#leafDark)"/>
+                    <ellipse cx="375" cy="235" rx="19" ry="10" transform="rotate(-15 375 235)" fill="url(#leafGreen)"/>
+                    <ellipse cx="335" cy="255" rx="22" ry="11" transform="rotate(45 335 255)" fill="url(#leafGreen)"/>
+
+                    <!-- Geniş Arka Yapraklar -->
+                    <path d="M250,340 Q180,220 175,130 Q220,170 250,340 Z" fill="url(#leafDark)"/>
+                    <path d="M250,340 Q320,220 325,130 Q280,170 250,340 Z" fill="url(#leafDark)"/>
+                    <path d="M240,350 Q120,290 95,245 Q160,250 240,350 Z" fill="url(#leafGreen)"/>
+                    <path d="M260,350 Q380,290 405,245 Q340,250 260,350 Z" fill="url(#leafGreen)"/>
+                </g>
+
+                <!-- 3. ÇİÇEK SAPLARI -->
+                <g stroke="#047857" stroke-width="5" stroke-linecap="round">
+                    <line x1="250" y1="380" x2="250" y2="170"/>
+                    <line x1="245" y1="380" x2="185" y2="195"/>
+                    <line x1="255" y1="380" x2="315" y2="195"/>
+                    <line x1="240" y1="380" x2="155" y2="250"/>
+                    <line x1="260" y1="380" x2="345" y2="250"/>
+                </g>
+
+                <!-- 4. CİPSO (MİNİK BEYAZ ÇİÇEKLER) -->
+                <g fill="#ffffff" opacity="0.95">
+                    <circle cx="150" cy="175" r="5"/><circle cx="162" cy="168" r="4"/><circle cx="143" cy="188" r="4.5"/>
+                    <circle cx="350" cy="175" r="5"/><circle cx="338" cy="168" r="4"/><circle cx="357" cy="188" r="4.5"/>
+                    <circle cx="215" cy="145" r="5"/><circle cx="228" cy="138" r="4"/><circle cx="205" cy="155" r="4"/>
+                    <circle cx="285" cy="145" r="5"/><circle cx="272" cy="138" r="4"/><circle cx="295" cy="155" r="4"/>
+                    <circle cx="130" cy="265" r="4.5"/><circle cx="370" cy="265" r="4.5"/>
+                </g>
+
+                <!-- 5. LALELER -->
+                <!-- Sol Üst Somon Lale -->
+                <g transform="translate(185, 175) rotate(-18)" class="flower-pulse">
+                    <path d="M-22,10 C-28,-25 -10,-45 0,-50 C10,-45 28,-25 22,10 C15,22 -15,22 -22,10 Z" fill="url(#tulipCoral)"/>
+                    <path d="M-12,12 C-15,-20 -5,-38 0,-45 C5,-38 15,-20 12,12 Z" fill="#fb7185" opacity="0.6"/>
+                    <path d="M-22,10 C-20,-15 -5,-30 0,-35 C-5,-10 -8,10 -12,16 Z" fill="#fed7aa" opacity="0.5"/>
+                </g>
+
+                <!-- Sağ Üst Mor/Lavanta Lale -->
+                <g transform="translate(315, 175) rotate(18)" class="flower-pulse" style="animation-delay: 1s;">
+                    <path d="M-22,10 C-28,-25 -10,-45 0,-50 C10,-45 28,-25 22,10 C15,22 -15,22 -22,10 Z" fill="url(#tulipLavender)"/>
+                    <path d="M-12,12 C-15,-20 -5,-38 0,-45 C5,-38 15,-20 12,12 Z" fill="#c084fc" opacity="0.6"/>
+                    <path d="M22,10 C20,-15 5,-30 0,-35 C5,-10 8,10 12,16 Z" fill="#f3e8ff" opacity="0.5"/>
+                </g>
+
+                <!-- 6. KATMERLİ GÜLLER -->
+                <!-- Merkez Büyük Kırmızı Gül -->
+                <g transform="translate(250, 175)" class="flower-pulse" style="animation-delay: 0.5s;">
+                    <circle cx="0" cy="0" r="42" fill="url(#roseRed)"/>
+                    <!-- Gül Yaprak Katmanları -->
+                    <path d="M-35,-10 C-40,-35 0,-45 25,-30 C45,-15 40,25 15,35 C-15,45 -40,20 -35,-10 Z" fill="#e11d48" opacity="0.85"/>
+                    <path d="M-25,-15 C-20,-32 15,-32 25,-12 C32,8 15,28 -8,25 C-26,22 -30,0 -25,-15 Z" fill="#f43f5e"/>
+                    <path d="M-16,-8 C-12,-22 12,-22 18,-6 C22,8 8,20 -6,16 C-18,12 -20,-2 -16,-8 Z" fill="#fb7185"/>
+                    <path d="M-8,-4 C-4,-12 8,-12 10,-2 C12,6 2,12 -5,8 C-10,5 -10,-1 -8,-4 Z" fill="#ffe4e6" opacity="0.7"/>
+                    <path d="M-4,-2 C0,-7 6,-5 5,1 C4,6 -3,6 -4,-2 Z" fill="#9f1239"/>
+                </g>
+
+                <!-- Sol Orta Pembe Gül -->
+                <g transform="translate(165, 240)" class="flower-pulse" style="animation-delay: 1.5s;">
+                    <circle cx="0" cy="0" r="36" fill="url(#rosePink)"/>
+                    <path d="M-28,-8 C-32,-28 0,-36 20,-24 C36,-12 32,20 12,28 C-12,36 -32,16 -28,-8 Z" fill="#fda4af" opacity="0.9"/>
+                    <path d="M-18,-10 C-14,-24 12,-24 18,-8 C24,6 10,20 -6,18 C-20,15 -22,0 -18,-10 Z" fill="#fb7185"/>
+                    <path d="M-9,-5 C-5,-14 8,-14 11,-3 C13,6 3,13 -5,9 C-11,6 -11,-1 -9,-5 Z" fill="#fff1f2"/>
+                </g>
+
+                <!-- Sağ Orta Pembe Gül -->
+                <g transform="translate(335, 240)" class="flower-pulse" style="animation-delay: 2s;">
+                    <circle cx="0" cy="0" r="36" fill="url(#rosePink)"/>
+                    <path d="M-28,-8 C-32,-28 0,-36 20,-24 C36,-12 32,20 12,28 C-12,36 -32,16 -28,-8 Z" fill="#fda4af" opacity="0.9"/>
+                    <path d="M-18,-10 C-14,-24 12,-24 18,-8 C24,6 10,20 -6,18 C-20,15 -22,0 -18,-10 Z" fill="#fb7185"/>
+                    <path d="M-9,-5 C-5,-14 8,-14 11,-3 C13,6 3,13 -5,9 C-11,6 -11,-1 -9,-5 Z" fill="#fff1f2"/>
+                </g>
+
+                <!-- 7. PAPATYALAR (Neşeli ve Saf Dokunuş) -->
+                <!-- Sol Üst Papatya -->
+                <g transform="translate(135, 200) scale(0.85)">
+                    <g fill="#ffffff" stroke="#f1f5f9" stroke-width="1">
+                        <ellipse cx="0" cy="-18" rx="6" ry="14"/><ellipse cx="0" cy="18" rx="6" ry="14"/>
+                        <ellipse cx="-18" cy="0" rx="14" ry="6"/><ellipse cx="18" cy="0" rx="14" ry="6"/>
+                        <ellipse cx="-13" cy="-13" rx="6" ry="14" transform="rotate(-45 -13 -13)"/>
+                        <ellipse cx="13" cy="13" rx="6" ry="14" transform="rotate(-45 13 13)"/>
+                        <ellipse cx="13" cy="-13" rx="6" ry="14" transform="rotate(45 13 -13)"/>
+                        <ellipse cx="-13" cy="13" rx="6" ry="14" transform="rotate(45 -13 13)"/>
+                    </g>
+                    <circle cx="0" cy="0" r="9" fill="#fbbf24"/>
+                    <circle cx="-2" cy="-2" r="3" fill="#fef08a"/>
+                </g>
+
+                <!-- Sağ Üst Papatya -->
+                <g transform="translate(365, 200) scale(0.85)">
+                    <g fill="#ffffff" stroke="#f1f5f9" stroke-width="1">
+                        <ellipse cx="0" cy="-18" rx="6" ry="14"/><ellipse cx="0" cy="18" rx="6" ry="14"/>
+                        <ellipse cx="-18" cy="0" rx="14" ry="6"/><ellipse cx="18" cy="0" rx="14" ry="6"/>
+                        <ellipse cx="-13" cy="-13" rx="6" ry="14" transform="rotate(-45 -13 -13)"/>
+                        <ellipse cx="13" cy="13" rx="6" ry="14" transform="rotate(-45 13 13)"/>
+                        <ellipse cx="13" cy="-13" rx="6" ry="14" transform="rotate(45 13 -13)"/>
+                        <ellipse cx="-13" cy="13" rx="6" ry="14" transform="rotate(45 -13 13)"/>
+                    </g>
+                    <circle cx="0" cy="0" r="9" fill="#fbbf24"/>
+                    <circle cx="-2" cy="-2" r="3" fill="#fef08a"/>
+                </g>
+
+                <!-- Alt Orta Papatya -->
+                <g transform="translate(220, 245) scale(0.95)">
+                    <g fill="#ffffff" stroke="#f1f5f9" stroke-width="1">
+                        <ellipse cx="0" cy="-18" rx="6" ry="14"/><ellipse cx="0" cy="18" rx="6" ry="14"/>
+                        <ellipse cx="-18" cy="0" rx="14" ry="6"/><ellipse cx="18" cy="0" rx="14" ry="6"/>
+                        <ellipse cx="-13" cy="-13" rx="6" ry="14" transform="rotate(-45 -13 -13)"/>
+                        <ellipse cx="13" cy="13" rx="6" ry="14" transform="rotate(-45 13 13)"/>
+                        <ellipse cx="13" cy="-13" rx="6" ry="14" transform="rotate(45 13 -13)"/>
+                        <ellipse cx="-13" cy="13" rx="6" ry="14" transform="rotate(45 -13 13)"/>
+                    </g>
+                    <circle cx="0" cy="0" r="9" fill="#f59e0b"/>
+                    <circle cx="-2" cy="-2" r="3" fill="#fde047"/>
+                </g>
+
+                <!-- Alt Sağ Küçük Kırmızı Gül -->
+                <g transform="translate(285, 250) scale(0.75)">
+                    <circle cx="0" cy="0" r="36" fill="url(#roseRed)"/>
+                    <path d="M-24,-8 C-28,-25 0,-32 18,-20 C32,-10 28,18 10,25 C-10,32 -28,14 -24,-8 Z" fill="#f43f5e"/>
+                    <path d="M-12,-6 C-8,-16 8,-16 12,-4 C15,6 4,14 -6,10 C-14,7 -15,-1 -12,-6 Z" fill="#ffe4e6" opacity="0.8"/>
+                </g>
+
+                <!-- 8. BUKET ÖN KRAFT/PASTEL KAĞIT KATMANLARI -->
+                <!-- Sol Ön Kanat -->
+                <path d="M105,260 Q185,295 255,395 L230,535 L165,420 Z" fill="url(#wrapFrontLeft)" stroke="#d6bfa9" stroke-width="1.5"/>
+                <!-- Sağ Ön Kanat -->
+                <path d="M395,260 Q315,295 245,395 L270,535 L335,420 Z" fill="url(#wrapFrontRight)" stroke="#cbb094" stroke-width="1.5"/>
+                <!-- Alt Koni Ucu -->
+                <path d="M210,390 L290,390 L268,545 Q250,555 232,545 Z" fill="#e6ccb2" stroke="#cbb094" stroke-width="1.5"/>
+
+                <!-- 9. SATEN KURDELE VE FİYONK -->
+                <g transform="translate(250, 405)">
+                    <!-- Kurdele Uçları -->
+                    <path d="M-10,5 Q-45,55 -65,95 L-45,90 L-38,105 Q-20,55 -4,10 Z" fill="url(#ribbonGrad)"/>
+                    <path d="M10,5 Q45,55 65,95 L45,90 L38,105 Q20,55 4,10 Z" fill="url(#ribbonGrad)"/>
+                    <!-- Sarma Bandı -->
+                    <rect x="-36" y="-8" width="72" height="16" rx="6" fill="#be123c"/>
+                    <!-- Sol Fiyonk Kanadı -->
+                    <path d="M-5,0 C-45,-32 -65,18 -5,6 Z" fill="url(#ribbonGrad)"/>
+                    <!-- Sağ Fiyonk Kanadı -->
+                    <path d="M5,0 C45,-32 65,18 5,6 Z" fill="url(#ribbonGrad)"/>
+                    <!-- Fiyonk Düğümü -->
+                    <rect x="-11" y="-10" width="22" height="22" rx="7" fill="#9f1239" stroke="#fda4af" stroke-width="1"/>
+                </g>
+            </svg>
+
+            <!-- 10. BUKETİN ÜZERİNDEKİ TIKLANABİLİR ZARF / NOT KARTI -->
+            <button id="envelopeBtn" aria-label="Doğum günü notunu aç" class="envelope-interactive absolute top-[53%] sm:top-[54%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 group focus:outline-none">
+                <div class="relative w-36 sm:w-44 h-24 sm:h-28 bg-[#fffaf5] rounded-xl shadow-xl border-2 border-rose-200 flex flex-col items-center justify-center p-2 overflow-visible">
+                    
+                    <!-- Zarfın İçindeki Hafif Görünen Kağıt Kenarı -->
+                    <div class="absolute inset-x-2 top-1 h-16 bg-white rounded-t-lg border border-rose-100 shadow-inner"></div>
+
+                    <!-- Zarf Alt ve Yan Kanatları (SVG ile zarif zarf çizimi) -->
+                    <svg viewBox="0 0 160 100" class="absolute inset-0 w-full h-full rounded-xl overflow-hidden pointer-events-none">
+                        <!-- Sol ve Sağ Üçgenler -->
+                        <polygon points="0,0 80,55 0,100" fill="#ffe4e6"/>
+                        <polygon points="160,0 80,55 160,100" fill="#fecdd3"/>
+                        <!-- Alt Üçgen -->
+                        <polygon points="0,100 80,48 160,100" fill="#fff1f2" stroke="#fda4af" stroke-width="1"/>
+                    </svg>
+
+                    <!-- Zarfın Açılan Üst Kapağı -->
+                    <svg viewBox="0 0 160 60" class="flap absolute top-0 left-0 w-full h-[60%] z-10 pointer-events-none drop-shadow-sm">
+                        <polygon points="0,0 160,0 80,55" fill="#fda4af"/>
+                    </svg>
+
+                    <!-- Kırmızı Kalp Mührü -->
+                    <div class="relative z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-rose-500 to-rose-700 shadow-md flex items-center justify-center border-2 border-white transform group-hover:scale-110 transition-transform">
+                        <svg class="w-5 h-5 text-white fill-current" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                    </div>
+
+                    <!-- Etiket Yazısı -->
+                    <span class="relative z-20 mt-1 px-2.5 py-0.5 bg-white/95 rounded-full text-[11px] sm:text-xs font-medium text-rose-800 shadow-sm border border-rose-100 whitespace-nowrap">
+                        Sana Bir Notum Var ✨
+                    </span>
+                </div>
+            </button>
+
+        </div>
+    </main>
+
+    <!-- Alt Bilgi / İpucu -->
+    <footer class="relative z-10 text-center mb-2">
+        <button id="openNoteTextBtn" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/80 hover:bg-white text-rose-700 text-xs sm:text-sm font-medium shadow-sm hover:shadow transition-all border border-rose-200/80 backdrop-blur-sm">
+            <span>💌</span>
+            <span>Notu Okumak İçin Dokun</span>
+        </button>
+    </footer>
+
+    <!-- DOĞUM GÜNÜ MEKTUBU MODALI -->
+    <div id="letterModal" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-rose-950/45 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="letterTitle">
+        
+        <!-- Mektup Kartı -->
+        <div class="modal-card letter-paper relative w-full max-w-lg max-h-[88vh] flex flex-col rounded-3xl p-6 sm:p-10 overflow-hidden">
+            
+            <!-- Üst Dekoratif Çiçek Köşesi & Kapatma Butonu -->
+            <div class="flex items-center justify-between border-b border-rose-200/70 pb-4 mb-4">
+                <div class="flex items-center gap-2 text-rose-500">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <span class="text-xs uppercase tracking-widest font-medium text-rose-400">Doğum Günü Mektubu</span>
+                </div>
+                
+                <button id="closeModalBtn" aria-label="Mektubu kapat" class="w-9 h-9 rounded-full bg-rose-100/80 hover:bg-rose-200 text-rose-700 flex items-center justify-center transition-colors focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mektup İçeriği (Kaydırılabilir) -->
+            <div class="custom-scroll overflow-y-auto pr-1 space-y-4 text-rose-950">
+                <h2 id="letterTitle" class="font-script text-4xl sm:text-5xl text-rose-700">
+                    Canım Annem,
+                </h2>
+
+                <div class="font-serif-elegant text-lg sm:text-xl leading-relaxed space-y-4 text-stone-800">
+                    <p>
+                        Doğum günün kutlu olsun benim güzel annem... Hayatımdaki en değerli hazinem, ilk öğretmenim, sığınağım ve her anımda yanımda hissettiğim en büyük gücüm sensin.
+                    </p>
+                    <p>
+                        Gülüşünle evimize güneş gibi doğduğun, şefkatinle her zorluğu kolaylaştırdığın ve koşulsuz sevginle beni bugünkü ben yaptığın için sana ne kadar teşekkür etsem az. Senin evladın olmak bu hayattaki en büyük şansım.
+                    </p>
+                    <p>
+                        Yeni yaşında yüzünden o sıcacık gülümseme, kalbinden huzur, ömründen sağlık hiç eksik olmasın. Birlikte nice güzel, mutlu ve sağlıklı yıllarımız olsun. İyi ki varsın, iyi ki benim annemsin!
+                    </p>
+                </div>
+
+                <!-- İmza Bölümü -->
+                <div class="pt-4 mt-6 border-t border-rose-200/60 flex flex-col items-end text-right">
+                    <span class="font-serif-elegant italic text-base sm:text-lg text-rose-700">
+                        Seni Çok Seven Oğlun
+                    </span>
+                    <span class="font-script text-3xl sm:text-4xl text-rose-600 mt-1">
+                        Cafer
+                    </span>
+                </div>
+            </div>
+
+            <!-- Alt Kapatma / Çiçeklere Dön Butonu -->
+            <div class="mt-6 pt-3 flex justify-center">
+                <button id="returnBouquetBtn" class="px-6 py-2.5 rounded-full bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white text-sm font-medium shadow-md hover:shadow-lg transition-all transform active:scale-95">
+                    💐 Bukete Geri Dön
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript: Zarf Etkileşimi, Konfeti/Taç Yaprak Animasyonu -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const envelopeBtn = document.getElementById('envelopeBtn');
+            const openNoteTextBtn = document.getElementById('openNoteTextBtn');
+            const letterModal = document.getElementById('letterModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const returnBouquetBtn = document.getElementById('returnBouquetBtn');
+
+            // Mektubu Açma Fonksiyonu
+            function openLetter() {
+                // Önce zarf kapağını açma animasyonunu tetikle
+                envelopeBtn.classList.add('envelope-opened');
+                
+                // Kısa bir gecikmeyle mektup modalını zarifçe ekrana getir
+                setTimeout(() => {
+                    letterModal.classList.add('active');
+                    burstPetals(); // Mektup açılırken ekstra yaprak/parıltı şöleni
+                }, 320);
+            }
+
+            // Mektubu Kapatma Fonksiyonu
+            function closeLetter() {
+                letterModal.classList.remove('active');
+                setTimeout(() => {
+                    envelopeBtn.classList.remove('envelope-opened');
+                }, 300);
+            }
+
+            // Olay Dinleyicileri (Hem tıklama hem dokunma uyumlu)
+            envelopeBtn.addEventListener('click', openLetter);
+            openNoteTextBtn.addEventListener('click', openLetter);
+            closeModalBtn.addEventListener('click', closeLetter);
+            returnBouquetBtn.addEventListener('click', closeLetter);
+
+            // Modal dışındaki karanlık alana tıklayınca kapatma
+            letterModal.addEventListener('click', (e) => {
+                if (e.target === letterModal) {
+                    closeLetter();
+                }
+            });
+
+            // ESC tuşu ile kapatma
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && letterModal.classList.contains('active')) {
+                    closeLetter();
+                }
+            });
+
+            // --- ARKA PLAN UÇUŞAN ÇİÇEK TAÇ YAPRAKLARI VE PARILTILAR ---
+            const canvas = document.getElementById('petalsCanvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+
+            function resizeCanvas() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            const petalColors = [
+                'rgba(251, 113, 133, 0.45)', // Gül kurusu pembe
+                'rgba(253, 164, 175, 0.55)', // Açık pastel pembe
+                'rgba(255, 228, 230, 0.75)', // Beyazımsı pembe
+                'rgba(244, 63, 94, 0.30)',   // Canlı gül tonu
+                'rgba(253, 224, 71, 0.45)'   // Altın parıltı
+            ];
+
+            class Particle {
+                constructor(isBurst = false) {
+                    this.reset(isBurst);
+                }
+
+                reset(isBurst = false) {
+                    this.isSparkle = Math.random() > 0.72;
+                    if (isBurst) {
+                        this.x = width / 2 + (Math.random() - 0.5) * 120;
+                        this.y = height / 2 + (Math.random() - 0.5) * 120;
+                        this.vx = (Math.random() - 0.5) * 6;
+                        this.vy = (Math.random() - 0.7) * 6;
+                    } else {
+                        this.x = Math.random() * width;
+                        this.y = Math.random() * height - height;
+                        this.vx = (Math.random() - 0.5) * 1.2;
+                        this.vy = 0.6 + Math.random() * 1.3;
+                    }
+                    this.size = this.isSparkle ? (1.5 + Math.random() * 2.5) : (6 + Math.random() * 8);
+                    this.color = petalColors[Math.floor(Math.random() * petalColors.length)];
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.spin = (Math.random() - 0.5) * 0.04;
+                    this.swaySpeed = 0.01 + Math.random() * 0.02;
+                    this.swayOffset = Math.random() * Math.PI * 2;
+                    this.isBurst = isBurst;
+                    this.life = 1.0;
+                }
+
+                update() {
+                    this.x += this.vx + Math.sin(this.swayOffset) * 0.6;
+                    this.y += this.vy;
+                    this.swayOffset += this.swaySpeed;
+                    this.angle += this.spin;
+
+                    if (this.isBurst) {
+                        this.vy += 0.06; // Hafif yerçekimi
+                        this.life -= 0.012;
+                    } else if (this.y > height + 20) {
+                        this.reset(false);
+                        this.y = -15;
+                    }
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, this.life);
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.angle);
+
+                    if (this.isSparkle) {
+                        // Parıltı noktası
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = '#fda4af';
+                        ctx.fill();
+                    } else {
+                        // Organik çiçek taç yaprağı şekli
+                        ctx.beginPath();
+                        ctx.moveTo(0, -this.size);
+                        ctx.bezierCurveTo(this.size, -this.size / 2, this.size, this.size / 2, 0, this.size);
+                        ctx.bezierCurveTo(-this.size, this.size / 2, -this.size, -this.size / 2, 0, -this.size);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+            }
+
+            // Başlangıçta ekranda nazikçe süzülen yaprakları oluştur
+            const initialCount = window.innerWidth < 640 ? 28 : 45;
+            for (let i = 0; i < initialCount; i++) {
+                const p = new Particle(false);
+                p.y = Math.random() * height; // İlk açılışta ekranın her yerinde olsun
+                particles.push(p);
+            }
+
+            // Mektup açıldığında ekstra yaprak saçılması
+            function burstPetals() {
+                for (let i = 0; i < 30; i++) {
+                    particles.push(new Particle(true));
+                }
+            }
+
+            // Animasyon Döngüsü
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.update();
+                    p.draw();
+                    if (p.isBurst && p.life <= 0) {
+                        particles.splice(i, 1);
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        });
+    </script>
+</body>
+</html>
